@@ -1180,25 +1180,52 @@ Response: 200 OK
 ```
 
 ### `POST` /group-reservations/{groupReservationId}/submit
-Response: 200 OK
+Owner-only. Consolidates all submitted guest sessions into the reservation's pre-order: merged dishes are added to the order, order status becomes `SubmittedByCustomer`, group reservation status becomes `Submitted`.
+Request body:
 ```json
 {
-  "message": "Group reservation pre-order submitted successfully."
+  "reservationId": "string"
 }
 ```
-
-### `GET` /guest/groups/{groupReservationId}/sessions
 Response: 200 OK
 ```json
 [
   {
-    "id": "string",
-    "groupReservationId": "string",
-    "guestName": "string",
-    "status": "string"
+    "dishId": "string",
+    "quantity": 3
   }
 ]
 ```
+Errors: `401` unauthorized, `403` caller is not the reservation owner, `404` group reservation or reservation not found, `400` no submitted sessions / sessions contain no dishes / pre-order not found / group already submitted or expired.
+
+### `GET` /guest/groups/{groupReservationId}/sessions
+Owner-only. Returns all guest sessions of the group pre-order (the owner's own session is excluded).
+Response: 200 OK
+```json
+{
+  "participants": [
+    {
+      "id": "string",
+      "type": "Guest",
+      "name": "string",
+      "items": [
+        {
+          "dish": {
+            "id": "string",
+            "name": "string",
+            "price": 180
+          },
+          "quantity": 2
+        }
+      ],
+      "total": 360,
+      "isSubmitted": true
+    }
+  ],
+  "total": 580
+}
+```
+Errors: `401` unauthorized, `403` caller is not the reservation owner, `404` group reservation not found.
 
 ### `DELETE` /guest/groups/{groupReservationId}/sessions/{guestSessionId}
 Response: 200 OK
